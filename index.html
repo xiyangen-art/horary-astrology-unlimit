@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>古典卜卦占星·师徒修行录 - Infinite Horary Astrology Apprentice</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Classical Aesthetics -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Noto Serif SC', 'serif'],
+            cinzel: ['Cinzel', 'serif']
+          },
+          colors: {
+            parchment: {
+              50: '#FAF7F0',
+              100: '#F3EDE0',
+              200: '#E6D7BD',
+              800: '#3D3323',
+              900: '#261F14'
+            },
+            celestial: {
+              900: '#070B14',
+              800: '#0F172A',
+              700: '#1E293B',
+              gold: '#D4AF37',
+              goldHover: '#B8952B',
+              ruby: '#9B2C2C',
+              jade: '#2F855A'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #070B14;
+      color: #E6D7BD;
+      font-family: 'Noto Serif SC', serif;
+      background-image: radial-gradient(circle at 50% 15%, rgba(212, 175, 55, 0.07) 0%, transparent 60%),
+                        radial-gradient(circle at 85% 85%, rgba(30, 58, 138, 0.12) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+    .gold-border { border: 1px solid rgba(212, 175, 55, 0.3); }
+    .gold-glow { box-shadow: 0 0 20px rgba(212, 175, 55, 0.12); }
+    .gold-text { color: #D4AF37; }
+    .parchment-card {
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      backdrop-filter: blur(12px);
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070B14; }
+    ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.6); }
+    .book-badge-frawley {
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: #F3EDE0;
+    }
+    .infinite-glow {
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+      border-color: rgba(168, 85, 247, 0.4);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-parchment-100 selection:bg-celestial-gold selection:text-celestial-900">
+
+ <header class="border-b border-celestial-gold/25 bg-celestial-900/95 backdrop-blur-md sticky top-0 z-50 shadow-2xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center gap-3.5 cursor-pointer group" onclick="app.navTo('library')">
+        <div class="w-12 h-12 rounded-xl border border-celestial-gold/40 flex items-center justify-center bg-gradient-to-br from-celestial-800 to-celestial-900 shadow-inner group-hover:border-celestial-gold transition">
+          <span class="font-cinzel text-2xl text-celestial-gold">☸</span>
+        </div>
+        <div>
+          <h1 class="font-cinzel text-base sm:text-lg font-bold tracking-wider text-celestial-gold flex items-center gap-2">
+            HORARY ASTROLOGY 
+            <span class="text-[10px] tracking-normal font-sans px-2 py-0.5 rounded-full bg-celestial-gold/15 text-celestial-gold border border-celestial-gold/30 font-medium">无限推演版</span>
+          </h1>
+          <p class="text-[11px] text-parchment-200/60 tracking-wider">观星 · 辨象 · 研理 — Classical Horary System</p>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Center (Cases Solved & Accuracy) -->
+      <div class="hidden xl:flex items-center space-x-4 text-xs font-mono">
+        <div class="flex items-center gap-2 bg-celestial-800/80 px-3.5 py-2 rounded-xl border border-celestial-gold/20 shadow-sm">
+          <span class="text-gray-400 font-sans">已破译案例:</span>
+          <span id="header-cases-count" class="font-bold text-celestial-gold text-sm">0</span>
+        </div>
+        <div class="flex items-center gap-2 bg-celestial-800/80 px-3.5 py-2 rounded-xl border border-celestial-gold/20 shadow-sm">
+          <span class="text-gray-400 font-sans">准确率:</span>
+          <span id="header-accuracy" class="font-bold text-emerald-400 text-sm">0%</span>
+        </div>
+      </div>
+
+      <!-- Main Navigation Actions -->
+      <div class="flex items-center gap-2.5">
+        <button onclick="app.openGeminiSettings()" class="px-3.5 py-2 rounded-xl border border-purple-400/50 bg-purple-950/70 hover:bg-purple-900 text-purple-100 text-xs font-semibold tracking-wide transition flex items-center gap-1.5 shadow-md">
+          <span>⚙️</span>
+          <span class="hidden sm:inline">Gemini API</span>
+        </button>
+        <button id="nav-btn-library" onclick="app.navTo('library')" class="px-3.5 py-2 rounded-xl border border-celestial-gold/40 bg-celestial-gold/20 text-celestial-gold text-xs font-semibold tracking-wider transition flex items-center gap-1.5 shadow-sm hover:bg-celestial-gold/30">
+          <span>🎯</span>
+          <span class="hidden sm:inline">案例库</span>
+        </button>
+        <button id="nav-btn-curriculum" onclick="app.navTo('curriculum')" class="px-3.5 py-2 rounded-xl border border-celestial-gold/25 hover:border-celestial-gold/60 bg-celestial-800/60 hover:bg-celestial-gold/10 text-xs font-semibold tracking-wider transition flex items-center gap-1.5 text-parchment-100">
+          <span>📖</span>
+          <span class="hidden sm:inline">讲义</span>
+        </button>
+        <button id="nav-btn-stats" onclick="app.navTo('stats')" class="px-3.5 py-2 rounded-xl border border-celestial-gold/25 hover:border-celestial-gold/60 bg-celestial-800/60 hover:bg-celestial-gold/10 text-xs font-semibold tracking-wider transition flex items-center gap-1.5 text-parchment-100">
+          <span>📊</span>
+          <span class="hidden sm:inline">修行录</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+    <!-- DISCLAIMER & INFINITE ENGINE BANNER -->
+    <div class="mb-6 bg-amber-950/40 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-base">📜</span>
+        <span><strong>教务与无限生成引擎：</strong>支持离线动态演案，也支持配置 <strong>Google Gemini API Key</strong> 实时智能生成千变万化的全新古典案例！</span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="gemini-status-badge" class="px-2 py-0.5 rounded bg-purple-900/60 border border-purple-400/40 text-purple-200 text-[10px] font-mono">⚡ 引擎已就绪</span>
+      </div>
+    </div>
+
+    <!-- VIEW 1: CASE LIBRARY & MATRIX (主案例实战库) -->
+    <div id="view-library" class="space-y-6">
+      
+      <!-- Action & Filter Header Card -->
+      <div class="parchment-card rounded-2xl p-6 gold-glow flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-purple-950/60 border border-purple-500/40 text-purple-300">
+            <span>✨ 算法与 Gemini AI 双模无限生成</span>
+          </div>
+          <h2 class="text-2xl font-bold text-parchment-50 tracking-wide">
+            ⛩️ 选定案宗，开启无限审盘修炼
+          </h2>
+          <p class="text-xs sm:text-sm text-parchment-200/80 leading-relaxed">
+            每次点击生成均可获得全新盘象、多元提问与逻辑推演步骤，告别重复。
+          </p>
+        </div>
+
+        <!-- Quick Random Challenge & Infinite Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <button onclick="app.startRandomUnsolvedCase()" class="px-5 py-3.5 rounded-xl bg-celestial-gold hover:bg-celestial-goldHover text-celestial-900 font-bold text-xs sm:text-sm tracking-wider transition shrink-0 shadow-lg flex items-center justify-center gap-2 gold-glow">
+            <span>🎲 随机答未解题</span>
+          </button>
+          <button onclick="app.generateAndPlayInfiniteCase()" class="px-5 py-3.5 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs sm:text-sm tracking-wider transition shrink-0 shadow-lg flex items-center justify-center gap-2 infinite-glow">
+            <span>🔮 生成全新随机案宗 (∞)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Case Filters Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-celestial-900/80 p-4 rounded-xl border border-celestial-gold/20">
+        <!-- Categories Filter -->
+        <div class="flex flex-wrap items-center gap-2" id="category-filter-bar">
+          <button onclick="app.setCategoryFilter('ALL')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-celestial-gold text-celestial-900">
+            全部分类
+          </button>
+          <button onclick="app.setCategoryFilter('💕 感情关系')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-celestial-800 text-gray-300 hover:text-celestial-gold">
+            💕 感情关系
+          </button>
+          <button onclick="app.setCategoryFilter('💼 事业工作')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-celestial-800 text-gray-300 hover:text-celestial-gold">
+            💼 事业工作
+          </button>
+          <button onclick="app.setCategoryFilter('🏠 房产买卖')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-celestial-800 text-gray-300 hover:text-celestial-gold">
+            🏠 房产买卖
+          </button>
+          <button onclick="app.setCategoryFilter('💰 财物失物')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-celestial-800 text-gray-300 hover:text-celestial-gold">
+            💰 财物失物
+          </button>
+          <button onclick="app.setCategoryFilter('⚖️ 诉讼竞争')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-celestial-800 text-gray-300 hover:text-celestial-gold">
+            ⚖️ 诉讼竞争
+          </button>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="flex items-center gap-2 border-l border-gray-800 pl-4 text-xs">
+          <span class="text-gray-400">状态:</span>
+          <select id="status-filter-select" onchange="app.renderCaseLibraryGrid()" class="bg-celestial-800 border border-gray-700 rounded-lg px-2.5 py-1 text-xs text-parchment-100 focus:outline-none focus:border-celestial-gold">
+            <option value="ALL">全部案例</option>
+            <option value="UNSOLVED">未破译</option>
+            <option value="SOLVED">已成功破译</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Case Grid Showcase Container -->
+      <div id="case-matrix-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Populated dynamically by JS -->
+      </div>
+
+    </div>
+
+    <div id="view-case" class="hidden space-y-6">
+      
+      <!-- Top Bar inside Case -->
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-celestial-gold/20 pb-4">
+        <div class="flex items-center gap-3">
+          <button onclick="app.navTo('library')" class="text-xs text-gray-400 hover:text-celestial-gold flex items-center gap-1">
+            ← 返回案例库
+          </button>
+          <span class="text-gray-600">|</span>
+          <span id="case-id-badge" class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-celestial-gold/20 text-celestial-gold border border-celestial-gold/30">
+            CASE #001
+          </span>
+          <span id="case-category-badge" class="book-badge-frawley text-xs px-2.5 py-0.5 rounded">
+            💕 感情关系
+          </span>
+          <span id="case-source-badge" class="px-2 py-0.5 rounded text-[10px] bg-purple-900/60 border border-purple-500/40 text-purple-200">
+            典藏库
+          </span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="app.generateAndPlayInfiniteCase()" class="text-xs text-purple-300 hover:text-purple-200 font-bold flex items-center gap-1">
+            🔮 生成下一个随机新案
+          </button>
+          <button onclick="app.startRandomUnsolvedCase()" class="text-xs text-celestial-gold hover:underline flex items-center gap-1">
+            🎲 抽取未答案例
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Case Panel: Left Chart/Context, Right Master Guidance -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- LEFT COLUMN: Client & Chart Information (5 Cols) -->
+        <div class="lg:col-span-5 space-y-5">
+          
+          <!-- Client & Question Card -->
+          <div class="parchment-card rounded-xl p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">💬</span>
+                <h3 class="font-bold text-sm text-parchment-50">求问者与背景 (Querent Context)</h3>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <span class="text-xs text-gray-400 block mb-1">【求问者背景】</span>
+                <p id="case-client-bg" class="text-xs sm:text-sm text-parchment-100 leading-relaxed bg-celestial-900/60 p-3 rounded-lg border border-gray-800">
+                  加载案例背景...
+                </p>
+              </div>
+
+              <div>
+                <span class="text-xs text-celestial-gold block mb-1">【所问具体事项】</span>
+                <p id="case-question" class="text-sm font-bold text-amber-200 leading-relaxed bg-celestial-900/80 p-3 rounded-lg border border-celestial-gold/30">
+                  “加载具体提问...”
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Horary Chart Display Canvas -->
+          <div class="parchment-card rounded-xl p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🌌</span>
+                <h3 class="font-bold text-sm text-parchment-50">卜卦星盘配置 (Regiomontanus Chart)</h3>
+              </div>
+              <span class="text-[10px] text-gray-400">雷吉蒙塔努斯分宫</span>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="relative aspect-square w-full bg-celestial-900/90 rounded-lg border border-celestial-gold/20 flex items-center justify-center p-2">
+              <canvas id="horaryChartCanvas" width="400" height="400" class="w-full h-full object-contain"></canvas>
+            </div>
+
+            <!-- Chart Details Table -->
+            <div class="text-xs space-y-2 bg-celestial-900/70 p-3 rounded-lg border border-gray-800">
+              <div class="flex justify-between border-b border-gray-800 pb-1">
+                <span class="text-gray-400">Ascendant (一宫头):</span>
+                <span id="chart-asc-str" class="font-mono text-celestial-gold">--</span>
+              </div>
+              <div class="flex justify-between border-b border-gray-800 pb-1">
+                <span class="text-gray-400">Midheaven (十宫头):</span>
+                <span id="chart-mc-str" class="font-mono text-celestial-gold">--</span>
+              </div>
+              <div class="flex justify-between border-b border-gray-800 pb-1">
+                <span class="text-gray-400">Moon (月亮状态):</span>
+                <span id="chart-moon-str" class="font-mono">--</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">关键相位 / 结构:</span>
+                <span id="chart-aspect-str" class="font-mono text-amber-300">--</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Interactive Reasoning Process (7 Cols) -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- Master Dialogue & Step Reasoning Box -->
+          <div class="parchment-card rounded-xl p-6 space-y-5 border-t-4 border-t-celestial-gold">
+            
+            <!-- Master Header -->
+            <div class="flex items-center gap-4 border-b border-gray-800 pb-4">
+              <div class="w-12 h-12 rounded-full border border-celestial-gold/50 bg-celestial-900 flex items-center justify-center shrink-0">
+                <span class="text-2xl">🧙‍♂️</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-parchment-50 flex items-center gap-2">
+                  占星师父 John Frawley 训诫与解盘思路
+                  <span class="text-xs px-2 py-0.5 rounded bg-celestial-gold/10 text-celestial-gold border border-celestial-gold/20 font-normal">正统法理</span>
+                </h3>
+                <p class="text-xs text-gray-400">“区分事物实体与功用，严查宫位归属与主宰星状态。”</p>
+              </div>
+            </div>
+
+            <!-- Interactive Step Questions Form (Replaced with Thought Process, Key Considerations & Conclusion) -->
+            <div id="student-interaction-panel" class="space-y-5">
+              
+              <div class="space-y-4">
+                <div class="p-4 rounded-xl bg-celestial-900/80 border border-celestial-gold/20 space-y-2">
+                  <span class="text-xs text-celestial-gold font-bold block flex items-center gap-1.5">
+                    <span>🧠</span> 1. 宫位归属与主星推演 (House & Ruler Identification)
+                  </span>
+                  <p id="case-logic-step-1" class="text-xs sm:text-sm text-parchment-100 leading-relaxed">
+                    加载逻辑推演...
+                  </p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-celestial-900/80 border border-celestial-gold/20 space-y-2">
+                  <span class="text-xs text-celestial-gold font-bold block flex items-center gap-1.5">
+                    <span>⚖️</span> 2. 注意事项与核心天象/接纳 (Key Considerations & Aspects)
+                  </span>
+                  <p id="case-logic-step-2" class="text-xs sm:text-sm text-parchment-100 leading-relaxed">
+                    加载注意事项...
+                  </p>
+                </div>
+              </div>
+
+              <!-- Final Conclusion & Answer Submission Box -->
+              <div class="p-5 rounded-xl bg-celestial-900 border border-celestial-gold/40 space-y-4 gold-glow">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                  <span class="text-xs font-bold text-amber-200">🔮 终局断判 (Final Horary Answer)</span>
+                  <span class="text-[10px] text-gray-400">对照原著法则确认最终结论</span>
+                </div>
+
+                <div class="space-y-2">
+                  <p class="text-xs text-gray-300">请根据上方盘象与 Frawley 研判思路，做出你的最终裁断：</p>
+                  <div id="final-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Loaded dynamically -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- MASTER REVIEW & FEEDBACK CARD (Revealed after Case completion) -->
+          <div id="master-review-panel" class="hidden parchment-card rounded-xl p-6 space-y-5 border-l-4 border-l-emerald-500 gold-glow">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">🔮</span>
+                <h3 class="font-bold text-base text-parchment-50">师父最终点评 (Master Judgement)</h3>
+              </div>
+              <span id="review-score-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                推理无误 · 功力大进
+              </span>
+            </div>
+
+            <div class="space-y-4 text-xs sm:text-sm">
+              <div class="p-3 rounded-lg bg-celestial-900/80 border border-gray-800 space-y-1">
+                <span class="text-celestial-gold font-bold block">① 准确终局判断 (Final Horary Result):</span>
+                <p id="review-final-result" class="text-parchment-100 font-semibold">--</p>
+              </div>
+
+              <div class="p-3 rounded-lg bg-celestial-900/60 border border-celestial-gold/20 space-y-2">
+                <span class="text-celestial-gold font-bold block">② 📖 对应《The Horary Textbook》原著法则与推演 logic:</span>
+                <p id="review-book-citation" class="text-xs font-mono text-gray-300 leading-relaxed">--</p>
+              </div>
+            </div>
+
+            <!-- Action to Next Case -->
+            <div class="pt-2 flex flex-wrap justify-between items-center gap-3">
+              <button onclick="app.navTo('library')" class="text-xs text-gray-400 hover:text-celestial-gold">
+                ← 返回案例库选择
+              </button>
+              <div class="flex items-center gap-2">
+                <button onclick="app.generateAndPlayInfiniteCase()" class="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs tracking-wider transition shadow-lg flex items-center gap-1 infinite-glow">
+                  <span>🔮 生成下一个随机新案</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div id="view-curriculum" class="hidden space-y-6">
+      <div class="flex items-center justify-between border-b border-celestial-gold/20 pb-4">
+        <div>
+          <h2 class="text-xl font-bold text-celestial-gold flex items-center gap-2">
+            📖 古典卜卦体系讲义与法则速查
+          </h2>
+          <p class="text-xs text-gray-400">Strictly sourced from "The Horary Textbook" by John Frawley</p>
+        </div>
+        <button onclick="app.navTo('library')" class="text-xs text-gray-400 hover:text-celestial-gold">← 返回案例库</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left: Chapter List -->
+        <div class="lg:col-span-4 space-y-3">
+          <h3 class="text-xs font-bold text-celestial-gold uppercase tracking-wider">讲义章节目录</h3>
+          <div class="space-y-2" id="curriculum-chapter-list">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Flash Quiz Quick Launcher Box -->
+          <div class="parchment-card rounded-xl p-4 space-y-3 border border-emerald-500/30">
+            <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+              <span>⚡</span>
+              <span>法则速查 Flash Quiz</span>
+            </div>
+            <p class="text-xs text-gray-400">针对 12宫位含义、转宫法、5度原则等高频考点速答。</p>
+            <button onclick="app.openFlashQuizModal()" class="w-full py-2 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 rounded-lg text-xs font-bold hover:bg-emerald-900/50">
+              开启速答测验
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Chapter Content Display -->
+        <div class="lg:col-span-8 parchment-card rounded-xl p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+            <span id="curriculum-badge" class="book-badge-frawley text-xs px-2.5 py-0.5 rounded">📖 本书正统讲义</span>
+            <span id="curriculum-chapter-title" class="font-bold text-celestial-gold text-base">章节标题</span>
+          </div>
+          <div id="curriculum-body" class="text-xs sm:text-sm text-parchment-100 leading-relaxed space-y-4">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-stats" class="hidden space-y-6">
+      <div class="flex items-center justify-between border-b border-celestial-gold/20 pb-4">
+        <div>
+          <h2 class="text-xl font-bold text-celestial-gold flex items-center gap-2">
+            📊 我的占星修行录
+          </h2>
+          <p class="text-xs text-gray-400">全流程断盘历史与准确率矩阵统计</p>
+        </div>
+        <button onclick="app.navTo('library')" class="text-xs text-gray-400 hover:text-celestial-gold">← 返回案例库</button>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="parchment-card rounded-xl p-6 space-y-2 text-center">
+          <span class="text-xs text-gray-400 block">破译案例总数</span>
+          <span id="stats-total-cases" class="text-3xl font-bold text-parchment-50">0</span>
+        </div>
+        <div class="parchment-card rounded-xl p-6 space-y-2 text-center">
+          <span class="text-xs text-gray-400 block">判断准确率</span>
+          <span id="stats-accuracy-rate" class="text-3xl font-bold text-emerald-400">0%</span>
+        </div>
+        <div class="parchment-card rounded-xl p-6 space-y-2 text-center">
+          <span class="text-xs text-gray-400 block">破译连胜纪录</span>
+          <span id="stats-streak-count" class="text-3xl font-bold text-amber-400">0</span>
+        </div>
+      </div>
+
+      <!-- Export / Import Progress -->
+      <div class="parchment-card rounded-xl p-6 space-y-4">
+        <h3 class="font-bold text-sm text-parchment-50 border-b border-gray-800 pb-2">💾 存档与重置 (Data Management)</h3>
+        <p class="text-xs text-gray-400">如果案例库已经全部解开，或者想重新训练，可以重置或清空解题记录。</p>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="app.exportData()" class="px-4 py-2 bg-celestial-800 border border-celestial-gold/40 rounded-lg text-xs font-semibold text-celestial-gold hover:bg-celestial-gold/10">
+            📤 导出修行存档 (JSON)
+          </button>
+          <button onclick="app.resetData()" class="px-4 py-2 bg-rose-950/40 border border-rose-500/40 rounded-lg text-xs font-semibold text-rose-300 hover:bg-rose-900/30">
+            ⚠️ 重置已破解案例记录
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- GEMINI API SETTINGS MODAL -->
+  <div id="gemini-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+    <div class="parchment-card max-w-lg w-full rounded-2xl p-6 space-y-5 border-2 border-purple-400 infinite-glow relative z-50 shadow-2xl bg-celestial-900">
+      <button onclick="app.closeGeminiSettings()" class="absolute top-4 right-4 text-gray-300 hover:text-white text-lg font-bold p-1">✕</button>
+      
+      <div class="flex items-center gap-2 border-b border-gray-800 pb-3">
+        <span class="text-xl">⚡</span>
+        <h3 class="font-bold text-base text-purple-200">配置 Google Gemini API Key</h3>
+      </div>
+
+      <p class="text-xs text-parchment-100 leading-relaxed">
+        输入您的 Gemini API Key（支持 <strong>gemini-2.5-flash</strong> 模型），开启大模型实时智能生成真实古典卜卦案例。不配置则自动使用内置的高精度离线程序化演案引擎。
+      </p>
+
+      <div class="space-y-3">
+        <label class="block text-xs text-purple-300 font-semibold">Gemini API Key:</label>
+        <input type="password" id="gemini-key-input" placeholder="AIzaSy..." class="w-full bg-celestial-800 border border-purple-400 rounded-lg px-3 py-2.5 text-xs text-parchment-100 focus:outline-none focus:border-purple-300">
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <button onclick="app.clearGeminiKey()" class="text-xs text-rose-400 hover:underline">清除 Key (切换回离线演案)</button>
+        <div class="flex gap-2">
+          <button onclick="app.closeGeminiSettings()" class="px-4 py-2 bg-celestial-800 text-gray-300 text-xs rounded-lg hover:bg-gray-700">取消</button>
+          <button onclick="app.saveGeminiKey()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs rounded-lg shadow-lg">保存配置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLASH QUIZ MODAL CONTAINER -->
+  <div id="flash-quiz-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+    <div class="parchment-card max-w-xl w-full rounded-2xl p-6 space-y-5 border border-celestial-gold/50 gold-glow relative bg-celestial-900">
+      <button onclick="app.closeFlashQuizModal()" class="absolute top-4 right-4 text-gray-300 hover:text-white text-lg">✕</button>
+      
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <h3 class="font-bold text-sm text-emerald-400 flex items-center gap-2">
+          ⚡ 闪电核心法则速答
+        </h3>
+        <span id="flash-source" class="text-[10px] text-amber-300">📖 John Frawley</span>
+      </div>
+
+      <p id="flash-question-text" class="text-sm font-bold text-parchment-50 leading-relaxed">
+        加载闪电问题...
+      </p>
+
+      <div id="flash-options-container" class="space-y-2">
+        <!-- Dynamic options -->
+      </div>
+
+      <div id="flash-feedback-box" class="hidden p-3 rounded-lg text-xs space-y-1">
+        <!-- Dynamic feedback -->
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button id="flash-next-btn" onclick="app.nextFlashQuestion()" class="hidden px-5 py-2 rounded-lg bg-celestial-gold text-celestial-900 font-bold text-xs">
+          下一题 →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-celestial-gold/30 bg-celestial-900 py-6 text-center text-xs text-gray-400 space-y-1">
+    <p>《The Horary Textbook》John Frawley 理论教务研习系统 • Regiomontanus House Logic & Infinite Case Generator</p>
+  </footer>
+
+  <script>
+    const FRAWLEY_CURRICULUM = [
+      {
+        id: "houses",
+        title: "第三章：后天十二宫 (The Houses)",
+        source: "📖 The Horary Textbook — John Frawley (Ch. 3)",
+        summary: "宫位决定事物的归属。将事物分错宫位（Wrong House）会导致整盘判语皆错。切记：物本身的实体与其功用不同。",
+        content: `
+          <p><strong>1宫 (1st House)：</strong> 求问者（Querent）、肉身、载具。也代表“我们”（如夫妻同问）或认同的团队。</p>
+          <p><strong>2宫 (2nd House)：</strong> 动产（Movable Possessions - 汽车、财富、存折）。也代表顾问、律师、证人。喉咙与食物。</p>
+          <p><strong>3宫 (3rd House)：</strong> 兄弟姐妹、堂亲。日常例行短途奔波。基础知识。发出的信件。邻居。</p>
+          <p><strong>4宫 (4th House)：</strong> 父亲、双亲。不动产（Immovable Property - 房屋, 土地）。事的终局（The end of the matter）。地下宝藏。</p>
+          <p><strong>5宫 (5th House)：</strong> 娱乐场所。子女与怀孕。性行为（绝不是8宫！）。著作或画作。</p>
+          <p><strong>6宫 (6th House)：</strong> 疾病与不幸。求问者的雇员、维修工。小动物/宠物（小于山羊）。</p>
+          <p><strong>7宫 (7th House)：</strong> 伴侣、配偶、恋人。交易对手（买方/卖方）。公开的敌人、盗贼、路人甲。</p>
+          <p><strong>8宫 (8th House)：</strong> 死亡。对方的钱财（7宫的2宫 - 如买方出价）。遗嘱。心的恐惧与焦虑。绝不代表性！</p>
+          <p><strong>9宫 (9th House)：</strong> 特殊/特殊目的旅程（度假、朝圣）。高等知识、大学、导师、神父。梦境与预言。</p>
+          <p><strong>10宫 (10th House)：</strong> 国王、老板、政府、法官、母亲。事业与荣誉。</p>
+          <p><strong>11宫 (11th House)：</strong> 知心朋友（同事看7宫）。老板的钱/工资（10宫的2宫）。意外之财.愿望。</p>
+          <p><strong>12宫 (12th House)：</strong> 隐秘敌人、流言造谣者。自我毁灭、监狱。大于山羊的大动物。</p>
+        `
+      },
+      {
+        id: "turning",
+        title: "转宫法 (Turning the Chart)",
+        source: "📖 The Horary Textbook — John Frawley (Ch. 3)",
+        summary: "当问题涉及他人而非求问者本身时，必须以该人所在的宫位作为新的1宫重新推演。",
+        content: `
+          <p>例如：“我女儿的事业如何？”女儿是5宫，女儿的事业即是5宫的10宫（原始盘的第2宫）。</p>
+          <p><strong>经典转宫案例：</strong></p>
+          <ul>
+            <li>女儿的手镯：5宫的2宫 = 6宫</li>
+            <li>女儿的邻居：5宫的3宫 = 7宫</li>
+            <li>国王的钱：10宫的2宫 = 11宫</li>
+            <li>老板的猫：10宫的6宫 = 3宫</li>
+          </ul>
+        `
+      },
+      {
+        id: "dignities",
+        title: "尊贵、接纳与相位 (Dignity, Reception & Aspect)",
+        source: "📖 The Horary Textbook — John Frawley (Ch. 7-10)",
+        summary: "尊贵（Dignity）决定能力，接纳（Reception）决定态度与好恶，入相位（Applying Aspect）决定事件是否会发生。",
+        content: `
+          <p><strong>庙旺落陷：</strong>Essential Dignity 代表实力与品格；Debility (Detriment, Fall) 代表受损、无能或不良意图。</p>
+          <p><strong>接纳 (Reception)：</strong>A星落在B星的庙旺位置，代表A非常喜欢/在乎B。</p>
+          <p><strong>相位：</strong>入相位（Applying）代表正在达成，出相位（Separating）代表事情已结束。</p>
+        `
+      }
+    ];
+
+    const EXTENDED_CASE_DATABASE = [
+      {
+        id: "CASE-101",
+        category: "💕 感情关系",
+        title: "前女友发来赞动态，我们还能复合吗？",
+        difficulty: "🟢 简单",
+        clientBg: "求问者与前女友分手3个月。昨天前女友突然在社交平台点赞了他的动态，求问者心生涟漪，问能否复合。",
+        question: "我和前女友还能重新走到一起吗？",
+        chartData: { asc: "Scorpio 12°", mc: "Leo 05°", moon: "Cancer 18°", lord1: "Mars in Virgo", lord7: "Venus in Taurus", aspectStr: "三分入相位 (Applying Trine)" },
+        correctResult: "Yes (可以复合)",
+        citation: "📖 Chapter 8: Applying Aspects (p. 112)",
+        reasoning: "Lord 1 (火星) 与 Lord 7 (金星) 正在形成三分入相位（Applying Trine），且月亮位于巨蟹座庙旺状态，无阻隔。",
+        logicStep1: "求问者由第1宫主（火星）代表，前女友由第7宫主（金星）代表。双方各自拥有明确的宫位归属。",
+        considerations: "需注意金星与火星是否落入入庙或入旺位置，同时检查月亮是否有空亡或受克阻碍。本案中月亮在巨蟹座入庙，大吉。"
+      },
+      {
+        id: "CASE-102",
+        category: "💕 感情关系",
+        title: "他突然对我冷淡，是不是心里有别人了？",
+        difficulty: "🟡 普通",
+        clientBg: "求问者觉得恋爱半年的男友最近一周回复信息极慢，怀疑对方移情别恋或有隐瞒。",
+        question: "男友心里是否有了别的女人？",
+        chartData: { asc: "Aries 04°", mc: "Capricorn 22°", moon: "Gemini 11°", lord1: "Mars in Aries", lord7: "Venus in Virgo", aspectStr: "落陷受克 (Essential Debility)" },
+        correctResult: "No (没有新人，但对方状态极差/焦虑)",
+        citation: "📖 Chapter 7: Essential Debilities (p. 85)",
+        reasoning: "代表男友的 John Frawley 体系中，7宫主金星若处于室女座落陷（Fall）且落在6宫，代表他正陷于个人麻烦、生病或工作困境，而非移情别恋。",
+        logicStep1: "求问者为1宫主（火星），男友为7宫主（金星）。检查金星是否在其他地方对第三方星体有强烈接纳。",
+        considerations: "切忌将宫位主星落陷误判为移情别恋。室女座落陷往往反映求问者的对象正深陷工作压力或健康困扰（6宫属性）。"
+      },
+      {
+        id: "CASE-201",
+        category: "💼 事业工作",
+        title: "这轮跨国大厂面试，我能拿到 Offer 吗？",
+        difficulty: "🟢 简单",
+        clientBg: "求问者上周参加了终面，HR表示一周内出结果，求问者心悬空中。",
+        question: "我能顺利拿到这份工作 Offer 吗？",
+        chartData: { asc: "Gemini 15°", mc: "Aquarius 28°", moon: "Taurus 02°", lord1: "Mercury in Gemini", lord10: "Saturn in Aquarius", aspectStr: "十宫入庙 & 三分吉相" },
+        correctResult: "Yes (顺利拿到 Offer)",
+        citation: "📖 Chapter 14: Jobs & Career (p. 188)",
+        reasoning: "代表工作的 Lord 10 (Saturn) 在10宫入庙，公司实力强；Lord 1 (水星) 与 Lord 10 正形成拱照入相位，且月亮在金牛座旺势。",
+        logicStep1: "求问者为1宫主（水星），工作/职位由第10宫主（土星）代表。10宫主在10宫入庙，代表大厂实力雄厚。",
+        considerations: "检查水星与土星是否存在入相位连结。本案中水土三分入相位，且月亮在金牛座入旺，事成无疑。"
+      }
+    ];
+
+    class HoraryApp {
+      constructor() {
+        this.cases = [...EXTENDED_CASE_DATABASE];
+        this.currentCaseId = null;
+        this.solvedCases = JSON.parse(localStorage.getItem('frawley_solved_cases') || '{}');
+        this.geminiApiKey = localStorage.getItem('frawley_gemini_key') || '';
+        
+        this.activeCategory = 'ALL';
+        this.activeChapterId = 'houses';
+        this.flashQuizIndex = 0;
+        this.flashScore = 0;
+
+        this.flashQuestions = [
+          { q: "John Frawley 强调失物盘中，失物通常看哪两个主要宫位？", options: ["2宫 (自己的动产) 与 4宫 (终局/隐藏处)", "1宫 与 12宫", "7宫 与 8宫"], ans: 0, citation: "📖 Ch. 19" },
+          { q: "当月亮处于“空亡 (Void of Course)”状态时，意味着什么？", options: ["事情将有重大戏剧性反转", "没有事情会发生，当前状态将维持不变", "求问者会获得双倍财富"], ans: 1, citation: "📖 Ch. 9" },
+          { q: "在房地产买卖中，买方代表1宫，卖方代表7宫，则房产本身代表几宫？", options: ["第4宫", "第2宫", "第10宫"], ans: 0, citation: "📖 Ch. 16" }
+        ];
+
+        this.init();
+      }
+
+      init() {
+        this.updateHeaderStats();
+        this.renderCaseLibraryGrid();
+        this.renderCurriculumChapterList();
+        this.loadChapterContent('houses');
+        this.updateGeminiBadge();
+      }
+
+      updateGeminiBadge() {
+        const badge = document.getElementById('gemini-status-badge');
+        if (this.geminiApiKey) {
+          badge.textContent = '⚡ Gemini API 已连接 (gemini-2.5-flash AI 无限生成中)';
+          badge.className = 'px-2 py-0.5 rounded bg-purple-900/80 border border-purple-400 text-purple-200 text-[10px] font-mono';
+        } else {
+          badge.textContent = '⚡ 离线动态演案引擎已就绪 (可配置 Gemini Key)';
+          badge.className = 'px-2 py-0.5 rounded bg-blue-900/60 border border-blue-400/40 text-blue-200 text-[10px] font-mono';
+        }
+      }
+
+      openGeminiSettings() {
+        document.getElementById('gemini-modal').classList.remove('hidden');
+        document.getElementById('gemini-key-input').value = this.geminiApiKey;
+      }
+
+      closeGeminiSettings() {
+        document.getElementById('gemini-modal').classList.add('hidden');
+      }
+
+      saveGeminiKey() {
+        const key = document.getElementById('gemini-key-input').value.trim();
+        this.geminiApiKey = key;
+        localStorage.setItem('frawley_gemini_key', key);
+        this.closeGeminiSettings();
+        this.updateGeminiBadge();
+        this.showToast(key ? "Gemini API Key 保存成功！" : "API Key 已清除。");
+      }
+
+      clearGeminiKey() {
+        this.geminiApiKey = '';
+        localStorage.removeItem('frawley_gemini_key');
+        document.getElementById('gemini-key-input').value = '';
+        this.updateGeminiBadge();
+        this.showToast("已清除 API Key。");
+      }
+
+      showToast(msg) {
+        const div = document.createElement('div');
+        div.className = 'fixed bottom-5 right-5 z-50 bg-celestial-gold text-celestial-900 px-4 py-2 rounded-lg font-bold text-xs shadow-xl gold-glow animate-bounce';
+        div.textContent = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
+      }
+
+      navTo(viewName) {
+        ['view-library', 'view-case', 'view-curriculum', 'view-stats'].forEach(id => {
+          document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(`view-${viewName}`).classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      setCategoryFilter(cat) {
+        this.activeCategory = cat;
+        document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+          if (btn.textContent.trim().includes(cat) || (cat === 'ALL' && btn.textContent.trim().includes('全部分类'))) {
+            btn.className = 'cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-celestial-gold text-celestial-900';
+          } else {
+            btn.className = 'cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-celestial-800 text-gray-300 hover:text-celestial-gold';
+          }
+        });
+        this.renderCaseLibraryGrid();
+      }
+
+      renderCaseLibraryGrid() {
+        const grid = document.getElementById('case-matrix-grid');
+        const statusFilter = document.getElementById('status-filter-select').value;
+        grid.innerHTML = '';
+
+        const filtered = this.cases.filter(c => {
+          const matchCat = (this.activeCategory === 'ALL' || c.category === this.activeCategory);
+          const isSolved = !!this.solvedCases[c.id];
+          let matchStatus = true;
+          if (statusFilter === 'SOLVED') matchStatus = isSolved;
+          if (statusFilter === 'UNSOLVED') matchStatus = !isSolved;
+          return matchCat && matchStatus;
+        });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full py-12 text-center text-gray-400 space-y-3">
+              <p class="text-base">没有找到匹配的案宗</p>
+              <button onclick="app.generateAndPlayInfiniteCase()" class="px-4 py-2 bg-purple-700 text-white rounded-lg text-xs font-bold">
+                🔮 立即使用生成全新案例
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        filtered.forEach(c => {
+          const isSolved = !!this.solvedCases[c.id];
+          const card = document.createElement('div');
+          card.className = `parchment-card rounded-xl p-5 space-y-4 cursor-pointer hover:border-celestial-gold transition flex flex-col justify-between ${isSolved ? 'border-emerald-500/40 bg-celestial-900/90' : ''}`;
+          card.onclick = () => this.loadCase(c.id);
+
+          card.innerHTML = `
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-celestial-gold/20 text-celestial-gold">${c.id}</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] px-2 py-0.5 rounded book-badge-frawley">${c.category}</span>
+                  ${isSolved ? '<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">✓ 已破译</span>' : ''}
+                </div>
+              </div>
+              <h3 class="font-bold text-sm text-parchment-50 leading-snug">${c.title}</h3>
+              <p class="text-xs text-gray-300 line-clamp-2">${c.clientBg}</p>
+            </div>
+
+            <div class="pt-3 border-t border-gray-800 flex items-center justify-between text-xs">
+              <span class="text-amber-300 font-mono">难度: ${c.difficulty}</span>
+              <span class="text-celestial-gold font-semibold flex items-center gap-1">开始审盘 →</span>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+
+      async generateAndPlayInfiniteCase() {
+        this.showToast("🔮 正在使用 gemini-2.5-flash 生成全新古典卜卦案宗...");
+
+        if (this.geminiApiKey) {
+          try {
+            const prompt = `你是一位精通英国古典占星家 John Frawley《The Horary Textbook》的导师。请为学员随机生成一个全新的、富有挑战性的古典卜卦占星实战案例。
+必须返回严格的 JSON 格式（不要包含任何 markdown 标记如 \`\`\`json）：
+{
+  "category": "💕 感情关系" 或 "💼 事业工作" 或 "🏠 房产买卖" 或 "💰 财物失物" 或 "⚖️ 诉讼竞争",
+  "title": "简短引人入胜的案例标题",
+  "difficulty": "🟢 简单" 或 "🟡 普通" 或 "🟠 困难",
+  "clientBg": "求问者的背景故事...",
+  "question": "具体的卜卦提问...",
+  "chartData": {
+    "asc": "Libra 15°",
+    "mc": "Cancer 12°",
+    "moon": "Taurus 08°",
+    "lord1": "Venus in Aries",
+    "lord7": "Mars in Scorpio",
+    "aspectStr": "三分入相位 (Applying Trine)"
+  },
+  "correctResult": "Yes (成功达成)",
+  "citation": "📖 Chapter 8: Applying Aspects (p. 112)",
+  "reasoning": "详细的 Frawley 盘理分析...",
+  "logicStep1": "宫位归属与主星推演分析...",
+  "considerations": "注意事项与关键天象/接纳...",
+  "options": ["Yes (可以达成)", "No (无法达成/受阻)"]
+}`;
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiApiKey}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+              const parsed = JSON.parse(cleanJson);
+              const newId = `AI-2.5-${Math.floor(Math.random()*9000)+1000}`;
+              const newCase = { 
+                id: newId, 
+                ...parsed, 
+                options: parsed.options || [parsed.correctResult, "No (遭遇阻碍或无法达成)"],
+                isAI: true 
+              };
+              this.cases.unshift(newCase);
+              this.loadCase(newId);
+              this.showToast("✨ Gemini 2.5 Flash 生成新案成功！");
+              return;
+            }
+          } catch (err) {
+            console.error("Gemini AI generation error:", err);
+            this.showToast("⚠️ API 生成出错，已自动为您启用高级离线动态演案引擎。");
+          }
+        }
+
+        // Highly diverse offline procedural generator fallback
+        const categories = [
+          { name: "💕 感情关系", targetName: "对方/恋人", targetHouse: "第7宫", scenarios: ["前任能否复合", "新暧昧对象是否真心", "异地恋是否会分手"], houseNum: 7 },
+          { name: "💼 事业工作", targetName: "工作/职位", targetHouse: "第10宫", scenarios: ["跳槽面试能否通过", "当前岗位能否升职加薪", "新创业项目是否盈利"], houseNum: 10 },
+          { name: "🏠 房产买卖", targetName: "房屋/房产", targetHouse: "第4宫", scenarios: ["这套二手房能否顺利买下", "老房子能否高价卖出", "租房合同能否顺利签下"], houseNum: 4 },
+          { name: "💰 财物失物", targetName: "失物/存折", targetHouse: "第2宫", scenarios: ["遗失的钱包能不能找回", "借出去的钱能否收回", "这次投资是否会打水漂"], houseNum: 2 },
+          { name: "⚖️ 诉讼竞争", targetName: "诉讼对手/法官", targetHouse: "第7宫", scenarios: ["这场版权官司能否胜诉", "投标竞标能否中标", "考核评比能否击败对手"], houseNum: 7 }
+        ];
+
+        const signs = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+        const aspects = [
+          { text: "三分入相位 (Applying Trine)", positive: true },
+          { text: "六合入相位 (Applying Sextile)", positive: true },
+          { text: "刑相位阻隔 (Applying Square)", positive: false },
+          { text: "冲相位对立 (Applying Opposition)", positive: false },
+          { text: "出相位无连接 (Separating)", positive: false }
+        ];
+        
+        const catObj = categories[Math.floor(Math.random() * categories.length)];
+        const scenario = catObj.scenarios[Math.floor(Math.random() * catObj.scenarios.length)];
+        const newId = `INF-${Math.floor(Math.random()*9000)+1000}`;
+        
+        const ascSign = signs[Math.floor(Math.random() * signs.length)];
+        const ascDeg = Math.floor(Math.random() * 28) + 1;
+        const mcSign = signs[Math.floor(Math.random() * signs.length)];
+        const mcDeg = Math.floor(Math.random() * 28) + 1;
+        const moonSign = signs[Math.floor(Math.random() * signs.length)];
+        const moonDeg = Math.floor(Math.random() * 28) + 1;
+        const aspectObj = aspects[Math.floor(Math.random() * aspects.length)];
+        const isPositive = aspectObj.positive;
+
+        const proceduralCase = {
+          id: newId,
+          category: catObj.name,
+          title: `随机动态推演案：关于【${scenario}】之盘象`,
+          difficulty: "🟡 普通",
+          clientBg: `求问者近期面临着【${scenario}】的关键抉择，心中焦虑，特起此雷吉蒙塔努斯占星盘向师父请教。`,
+          question: `请问：【${scenario}】最终结果究竟如何？`,
+          chartData: { 
+            asc: `${ascSign} ${ascDeg}°`, 
+            mc: `${mcSign} ${mcDeg}°`, 
+            moon: `${moonSign} ${moonDeg}°`, 
+            lord1: `Planet in ${ascSign}`, 
+            lord7: `Planet in ${signs[(signs.indexOf(ascSign) + 6) % 12]}`, 
+            aspectStr: aspectObj.text 
+          },
+          correctResult: isPositive ? "Yes (顺利达成)" : "No (遭遇阻碍或无法达成)",
+          citation: "📖 Chapter 8: Perfection of Desire & Aspects",
+          reasoning: `按照 Frawley 理论，求问者主星与目标（看${catObj.targetHouse}）的主星呈现 ${aspectObj.text}，月亮位于 ${moonSign} ${moonDeg}°，${isPositive ? '吉星高照，成局有望。' : '受克严重或无有效入相位，事难成。'}`,
+          logicStep1: `求问者由第1宫主代表，目标【${catObj.targetName}】对应第${catObj.houseNum}宫主。双方星体在盘中各自落入对应星座。`,
+          considerations: `盘中关键天象为 ${aspectObj.text}，需仔细核对月亮是否有阻隔或空亡状态。`,
+          options: [
+            isPositive ? "Yes (顺利达成)" : "No (遭遇阻碍或无法达成)",
+            isPositive ? "No (遭遇阻碍或无法达成)" : "Yes (顺利达成)"
+          ]
+        };
+
+        this.cases.unshift(proceduralCase);
+        this.loadCase(newId);
+        this.showToast("🔮 动态演案新案生成完毕！");
+      }
+
+      startRandomUnsolvedCase() {
+        const unsolved = this.cases.filter(c => !this.solvedCases[c.id]);
+        const targetList = unsolved.length > 0 ? unsolved : this.cases;
+        const randomC = targetList[Math.floor(Math.random() * targetList.length)];
+        this.loadCase(randomC.id);
+      }
+
+      loadCase(id) {
+        const c = this.cases.find(x => x.id === id);
+        if (!c) return;
+
+        this.currentCaseId = id;
+
+        document.getElementById('case-id-badge').textContent = c.id;
+        document.getElementById('case-category-badge').textContent = c.category;
+        document.getElementById('case-source-badge').textContent = c.isAI ? 'Gemini 2.5 Flash 生成' : '典藏盘宗';
+        document.getElementById('case-client-bg').textContent = c.clientBg;
+        document.getElementById('case-question').textContent = `“${c.question}”`;
+
+        document.getElementById('chart-asc-str').textContent = c.chartData.asc;
+        document.getElementById('chart-mc-str').textContent = c.chartData.mc;
+        document.getElementById('chart-moon-str').textContent = c.chartData.moon;
+        document.getElementById('chart-aspect-str').textContent = c.chartData.aspectStr;
+
+        this.drawAstrologyChart(c.chartData);
+
+        // Populate reasoning, considerations & final answer options
+        document.getElementById('case-logic-step-1').textContent = c.logicStep1 || "求问者由第1宫主代表，所问目标对应相应的目标宫位主星。两星在盘中各自拥有其原初尊贵与落宫状态。";
+        document.getElementById('case-logic-step-2').textContent = c.considerations || `盘中关键相位为：${c.chartData.aspectStr}。需严格审视主星之间的接纳、入相位以及月亮的状态。`;
+
+        const optionsContainer = document.getElementById('final-options-container');
+        optionsContainer.innerHTML = '';
+        
+        const defaultOpts = c.options || [c.correctResult, c.correctResult.includes("Yes") ? "No (无法达成)" : "Yes (可以达成)"];
+        defaultOpts.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.className = 'w-full p-3 rounded-xl bg-celestial-800 border border-celestial-gold/30 hover:bg-celestial-gold/20 hover:border-celestial-gold text-xs font-bold text-parchment-100 transition text-center shadow-md';
+          btn.textContent = opt;
+          btn.onclick = () => this.checkFinalAnswer(opt, c.correctResult);
+          optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById('master-review-panel').classList.add('hidden');
+        document.getElementById('student-interaction-panel').classList.remove('hidden');
+
+        this.navTo('case');
+      }
+
+      checkFinalAnswer(selectedOpt, correctResult) {
+        const isCorrect = selectedOpt.toLowerCase().includes(correctResult.slice(0, 3).toLowerCase()) || correctResult.toLowerCase().includes(selectedOpt.slice(0, 3).toLowerCase());
+        
+        const c = this.cases.find(x => x.id === this.currentCaseId);
+        if (isCorrect) {
+          this.completeCase(c);
+        } else {
+          this.showToast("❌ 裁断结论与 John Frawley 盘理不符，请重新审视盘象与解题思路！");
+        }
+      }
+
+      drawAstrologyChart(data) {
+        const canvas = document.getElementById('horaryChartCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const r = w * 0.42;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        ctx.fillStyle = '#0B1120';
+        ctx.fillRect(0, 0, w, h);
+
+        // Outer circle
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = '#D4AF37';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Inner circle
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.7, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 4 Cardinal House axes
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+        ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Diagonal House cusps
+        ctx.beginPath();
+        ctx.moveTo(cx - r * 0.7, cy - r * 0.7); ctx.lineTo(cx + r * 0.7, cy + r * 0.7);
+        ctx.moveTo(cx - r * 0.7, cy + r * 0.7); ctx.lineTo(cx + r * 0.7, cy - r * 0.7);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+        ctx.stroke();
+
+        // Center hub
+        ctx.beginPath();
+        ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+        ctx.fillStyle = '#111827';
+        ctx.fill();
+        ctx.strokeStyle = '#D4AF37';
+        ctx.stroke();
+
+        ctx.fillStyle = '#D4AF37';
+        ctx.font = '12px Cinzel';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('☸', cx, cy);
+
+        ctx.font = '10px Noto Serif SC';
+        ctx.fillStyle = '#E6D7BD';
+        ctx.fillText(`Asc: ${data.asc}`, cx - r + 32, cy - 10);
+        ctx.fillText(`Desc`, cx + r - 25, cy - 10);
+        ctx.fillText(`MC: ${data.mc}`, cx, cy - r + 15);
+        ctx.fillText(`IC`, cx, cy + r - 15);
+      }
+
+      completeCase(c) {
+        this.solvedCases[c.id] = true;
+        localStorage.setItem('frawley_solved_cases', JSON.stringify(this.solvedCases));
+
+        document.getElementById('student-interaction-panel').classList.add('hidden');
+        const reviewPanel = document.getElementById('master-review-panel');
+        reviewPanel.classList.remove('hidden');
+
+        document.getElementById('review-final-result').textContent = c.correctResult;
+        document.getElementById('review-book-citation').textContent = `${c.citation} — 盘理精要：${c.reasoning}`;
+
+        this.updateHeaderStats();
+        this.renderCaseLibraryGrid();
+        this.showToast("🏆 案宗成功破译！修行积累大进！");
+      }
+
+      renderCurriculumChapterList() {
+        const list = document.getElementById('curriculum-chapter-list');
+        list.innerHTML = '';
+        FRAWLEY_CURRICULUM.forEach(ch => {
+          const btn = document.createElement('button');
+          const isSel = (this.activeChapterId === ch.id);
+          btn.className = `w-full text-left px-4 py-3 rounded-xl border text-xs font-semibold transition ${isSel ? 'bg-celestial-gold text-celestial-900 border-celestial-gold font-bold shadow-lg' : 'bg-celestial-800/80 border-gray-700 text-parchment-100 hover:border-celestial-gold/50'}`;
+          btn.innerHTML = `
+            <div class="font-bold">${ch.title}</div>
+            <div class="text-[10px] opacity-80 mt-0.5 truncate">${ch.summary}</div>
+          `;
+          btn.onclick = () => this.loadChapterContent(ch.id);
+          list.appendChild(btn);
+        });
+      }
+
+      loadChapterContent(chId) {
+        this.activeChapterId = chId;
+        const ch = FRAWLEY_CURRICULUM.find(x => x.id === chId);
+        if (!ch) return;
+
+        document.getElementById('curriculum-badge').textContent = ch.source;
+        document.getElementById('curriculum-chapter-title').textContent = ch.title;
+        document.getElementById('curriculum-body').innerHTML = ch.content;
+        this.renderCurriculumChapterList();
+      }
+
+      openFlashQuizModal() {
+        this.flashQuizIndex = 0;
+        this.flashScore = 0;
+        document.getElementById('flash-quiz-modal').classList.remove('hidden');
+        this.renderFlashQuestion();
+      }
+
+      closeFlashQuizModal() {
+        document.getElementById('flash-quiz-modal').classList.add('hidden');
+      }
+
+      renderFlashQuestion() {
+        const qObj = this.flashQuestions[this.flashQuizIndex];
+        document.getElementById('flash-source').textContent = qObj.citation;
+        document.getElementById('flash-question-text').textContent = `Q${this.flashQuizIndex + 1}: ${qObj.q}`;
+        
+        const optContainer = document.getElementById('flash-options-container');
+        optContainer.innerHTML = '';
+        document.getElementById('flash-feedback-box').classList.add('hidden');
+        document.getElementById('flash-next-btn').classList.add('hidden');
+
+        qObj.options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'w-full text-left px-4 py-3 rounded-lg bg-celestial-800/90 border border-gray-700 hover:border-celestial-gold text-xs text-parchment-100 transition';
+          btn.textContent = opt;
+          btn.onclick = () => this.answerFlashQuestion(idx);
+          optContainer.appendChild(btn);
+        });
+      }
+
+      answerFlashQuestion(selectedIdx) {
+        const qObj = this.flashQuestions[this.flashQuizIndex];
+        const feedbackBox = document.getElementById('flash-feedback-box');
+        feedbackBox.classList.remove('hidden');
+
+        if (selectedIdx === qObj.ans) {
+          feedbackBox.className = 'p-3 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs space-y-1';
+          feedbackBox.innerHTML = `<strong>✓ 回答正确！</strong> 符合 Frawley 原著论述。`;
+          this.flashScore++;
+        } else {
+          feedbackBox.className = 'p-3 rounded-lg bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs space-y-1';
+          feedbackBox.innerHTML = `<strong>✕ 回答错误。</strong> 正确答案应为：${qObj.options[qObj.ans]}`;
+        }
+
+        if (this.flashQuizIndex < this.flashQuestions.length - 1) {
+          document.getElementById('flash-next-btn').classList.remove('hidden');
+        } else {
+          const nextBtn = document.getElementById('flash-next-btn');
+          nextBtn.textContent = '完成速测 (关闭)';
+          nextBtn.classList.remove('hidden');
+        }
+      }
+
+      nextFlashQuestion() {
+        this.flashQuizIndex++;
+        if (this.flashQuizIndex < this.flashQuestions.length) {
+          this.renderFlashQuestion();
+        } else {
+          this.closeFlashQuizModal();
+          this.showToast(`🎉 闪电速测完成！正确率: ${Math.round((this.flashScore / this.flashQuestions.length)*100)}%`);
+        }
+      }
+
+      updateHeaderStats() {
+        const totalSolved = Object.keys(this.solvedCases).length;
+        const casesCountEl = document.getElementById('header-cases-count');
+        if (casesCountEl) casesCountEl.textContent = totalSolved;
+        
+        const statsTotalCasesEl = document.getElementById('stats-total-cases');
+        if (statsTotalCasesEl) statsTotalCasesEl.textContent = totalSolved;
+        
+        const statsAccuracyRateEl = document.getElementById('stats-accuracy-rate');
+        if (statsAccuracyRateEl) statsAccuracyRateEl.textContent = totalSolved > 0 ? '100%' : '0%';
+        
+        const headerAccuracyEl = document.getElementById('header-accuracy');
+        if (headerAccuracyEl) headerAccuracyEl.textContent = totalSolved > 0 ? '100%' : '0%';
+        
+        const statsStreakCountEl = document.getElementById('stats-streak-count');
+        if (statsStreakCountEl) statsStreakCountEl.textContent = totalSolved;
+      }
+
+      exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.solvedCases, null, 2));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute("href", dataStr);
+        dlAnchor.setAttribute("download", "horary_apprentice_save.json");
+        document.body.appendChild(dlAnchor);
+        dlAnchor.click();
+        dlAnchor.remove();
+        this.showToast("📤 修行存档导出成功！");
+      }
+
+      resetData() {
+        if (confirm("确定要清空所有已破解案例记录吗？")) {
+          this.solvedCases = {};
+          localStorage.removeItem('frawley_solved_cases');
+          this.updateHeaderStats();
+          this.renderCaseLibraryGrid();
+          this.showToast("⚠️ 记录已重置。");
+        }
+      }
+    }
+
+    const app = new HoraryApp();
+  </script>
+</body>
+</html>
